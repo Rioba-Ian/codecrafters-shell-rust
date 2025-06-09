@@ -2,14 +2,12 @@
 use std::io::{self, Write};
 
 fn main() {
-    print!("$ ");
-    io::stdout().flush().unwrap();
-
-    // Wait for user input
-    let mut input = String::new();
-
     loop {
-        input.clear();
+        print!("$ ");
+        io::stdout().flush().unwrap();
+
+        // Wait for user input
+        let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
 
         let trimmed_input = input.trim();
@@ -20,5 +18,6 @@ fn main() {
         }
 
         println!("{}: command not found", trimmed_input);
+        input.clear();
     }
 }
