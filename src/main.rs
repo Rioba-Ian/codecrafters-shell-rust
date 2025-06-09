@@ -13,7 +13,6 @@ fn main() {
         let trimmed_input = input.trim();
 
         if trimmed_input == "exit 0" {
-            println!("Exiting program.");
             break;
         }
 
