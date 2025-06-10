@@ -1,6 +1,8 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 
+const SHELL_COMMANDS: [&'static str; 3] = ["echo", "type", "exit"];
+
 fn main() {
     loop {
         print!("$ ");
@@ -20,6 +22,15 @@ fn main() {
             ["exit"] => break,
             ["exit", code] => std::process::exit(code.parse().unwrap()),
             ["echo", args @ ..] => println!("{}", args.join(" ")),
+            ["type", args @ ..] => {
+                for item in args {
+                    if SHELL_COMMANDS.contains(item) {
+                        println!("{} is a shell builtin", item)
+                    } else {
+                        println!("{} not found", item)
+                    }
+                }
+            }
             [other] => println!("{}: command not found", other),
             _ => println!("unknown command"),
         }
