@@ -12,24 +12,18 @@ fn main() {
 
         let trimmed_input = input.trim();
 
-        match trimmed_input {
-            "exit 0" => break,
-            "quit" => break,
-            _ => parse_input(trimmed_input),
+        match trimmed_input
+            .split_whitespace()
+            .collect::<Vec<&str>>()
+            .as_slice()
+        {
+            ["exit"] => break,
+            ["exit", code] => std::process::exit(code.parse().unwrap()),
+            ["echo", args @ ..] => println!("{}", args.join(" ")),
+            [other] => println!("{}: command not found", other),
+            _ => println!("unknown command"),
         }
 
         input.clear();
-    }
-}
-
-fn parse_input(input: &str) {
-    let input_str = input.to_string();
-
-    if input_str.starts_with("echo") {
-        let echo_data: Vec<String> = input.split(" ").map(|s| s.to_string()).collect();
-        let parsed_data = &echo_data[1..].join(" ");
-        println!("{}", parsed_data);
-    } else {
-        println!("{}: command not found", input)
     }
 }
