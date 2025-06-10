@@ -12,11 +12,12 @@ fn main() {
 
         let trimmed_input = input.trim();
 
-        if trimmed_input == "exit 0" {
-            break;
+        match trimmed_input {
+            "exit 0" => break,
+            "quit" => break,
+            _ => println!("{}: command not found", trimmed_input),
         }
 
-        println!("{}: command not found", trimmed_input);
         input.clear();
     }
 }
