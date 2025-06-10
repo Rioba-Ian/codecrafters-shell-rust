@@ -21,20 +21,26 @@ fn main() {
         {
             ["exit"] => break,
             ["exit", code] => std::process::exit(code.parse().unwrap()),
-            ["echo", args @ ..] => println!("{}", args.join(" ")),
-            ["type", args @ ..] => {
-                for item in args {
-                    if SHELL_COMMANDS.contains(item) {
-                        println!("{} is a shell builtin", item)
-                    } else {
-                        println!("{} not found", item)
-                    }
-                }
-            }
+            ["echo", args @ ..] => cmd_echo(args),
+            ["type", args @ ..] => cmd_type(args),
             [other] => println!("{}: command not found", other),
             _ => println!("unknown command"),
         }
 
         input.clear();
+    }
+}
+
+fn cmd_echo(args: &[&str]) {
+    println!("{}", args.join(" "))
+}
+
+fn cmd_type(args: &[&str]) {
+    for item in args {
+        if SHELL_COMMANDS.contains(item) {
+            println!("{} is a shell builtin", item)
+        } else {
+            println!("{} not found", item)
+        }
     }
 }
