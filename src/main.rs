@@ -49,7 +49,7 @@ fn cmd_type(args: &[&str]) {
             if let Some(path) = find_file_in_path(val) {
                 println!("{} is {}", val, path.display());
             } else {
-                println!("{} not found.", val);
+                println!("{}: not found.", val);
             }
         } // _ => println!("{} not found", args[0]),
     }
