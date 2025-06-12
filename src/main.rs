@@ -1,7 +1,8 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
+use std::{env, path::PathBuf};
 
-const SHELL_COMMANDS: [&'static str; 3] = ["echo", "type", "exit"];
+// const SHELL_COMMANDS: [&'static str; 3] = ["echo", "type", "exit"];
 
 fn main() {
     loop {
@@ -36,11 +37,37 @@ fn cmd_echo(args: &[&str]) {
 }
 
 fn cmd_type(args: &[&str]) {
-    for item in args {
-        if SHELL_COMMANDS.contains(item) {
-            println!("{} is a shell builtin", item)
-        } else {
-            println!("{} not found", item)
-        }
+    let length_args = args.len();
+
+    if length_args > 1 {
+        println!("Too many arguments.");
+    }
+
+    match args[0] {
+        "exit" | "echo" => println!("{} is a shell builtin", args[0]),
+        val => {
+            if let Some(path) = find_file_in_path(val) {
+                println!("{} is {}", val, path.display());
+            } else {
+                println!("{} not found.", val);
+            }
+        } // _ => println!("{} not found", args[0]),
     }
 }
+
+fn find_file_in_path(file_name: &str) -> Option<PathBuf> {
+    let path_env = env::var("PATH").ok()?;
+
+    for path_component in env::split_paths(&path_env) {
+        let full_path = path_component.join(file_name);
+        if full_path.is_file() {
+            return Some(full_path);
+        }
+    }
+    None
+}
+
+/*
+ * When you come back to continue use this for reference and help
+ * https://forum.codecrafters.io/t/i-have-a-problem-with-mg5/6946
+ */
