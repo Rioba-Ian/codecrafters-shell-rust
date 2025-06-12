@@ -91,5 +91,5 @@ fn exec_external(path_of_cmd: PathBuf, cmd: &[&str]) {
         command.args(&cmd[1..]);
     }
 
-    command.status().expect("failed to execute process");
+    command.output().expect("failed to execute process");
 }
