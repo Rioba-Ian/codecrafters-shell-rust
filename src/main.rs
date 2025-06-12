@@ -27,8 +27,8 @@ fn main() {
             _ => {
                 let args = trimmed_input.split_whitespace().collect::<Vec<&str>>();
                 let cmd = args.as_slice();
-                if let Some(_v) = find_file_in_path(cmd[0]) {
-                    exec_external(cmd);
+                if let Some(v) = find_file_in_path(cmd[0]) {
+                    exec_external(v, cmd);
                 } else {
                     println!("{}: command not found", cmd[0])
                 }
@@ -74,7 +74,7 @@ fn find_file_in_path(file_name: &str) -> Option<PathBuf> {
     None
 }
 
-fn exec_external(cmd: &[&str]) {
+fn exec_external(path_of_cmd: PathBuf, cmd: &[&str]) {
     println!(
         "Program was passed {} args (including program name).",
         cmd.len()
@@ -85,10 +85,11 @@ fn exec_external(cmd: &[&str]) {
         println!("Arg #{}: {}", i + 1, arg);
     }
 
-    let output = Command::new(cmd[0])
-        .args(cmd.iter().skip(1))
-        .output()
-        .expect("failed to execute process");
+    let mut command = Command::new(path_of_cmd);
 
-    println!("{}", String::from_utf8_lossy(&output.stdout))
+    if cmd.len() > 1 {
+        command.args(&cmd[1..]);
+    }
+
+    command.status().expect("failed to execute process");
 }
