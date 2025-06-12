@@ -44,7 +44,7 @@ fn cmd_type(args: &[&str]) {
     }
 
     match args[0] {
-        "exit" | "echo" => println!("{} is a shell builtin", args[0]),
+        "exit" | "echo" | "type" => println!("{} is a shell builtin", args[0]),
         val => {
             if let Some(path) = find_file_in_path(val) {
                 println!("{} is {}", val, path.display());
