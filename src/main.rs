@@ -88,8 +88,6 @@ fn exec_external(path_of_cmd: PathBuf, cmd: &[&str]) {
 
     let mut command = Command::new(path_of_cmd);
 
-    println!("{:?}", &cmd[1..]);
-
     if cmd.len() > 1 {
         command.args(&cmd[1..]);
     }
