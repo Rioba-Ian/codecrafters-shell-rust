@@ -76,7 +76,7 @@ fn find_file_in_path(file_name: &str) -> Option<PathBuf> {
 
 fn exec_external(cmd: &[&str]) {
     println!(
-        "Program was passed {} args (including program name)",
+        "Program was passed {} args (including program name).",
         cmd.len()
     );
     println!("Arg #0 (program name): {}", cmd[0]);
