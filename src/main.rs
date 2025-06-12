@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::{env, path::PathBuf};
+use std::{env, path::PathBuf, process::Command};
 
 // const SHELL_COMMANDS: [&'static str; 3] = ["echo", "type", "exit"];
 
@@ -24,8 +24,15 @@ fn main() {
             ["exit", code] => std::process::exit(code.parse().unwrap()),
             ["echo", args @ ..] => cmd_echo(args),
             ["type", args @ ..] => cmd_type(args),
-            [other] => println!("{}: command not found", other),
-            _ => println!("unknown command"),
+            _ => {
+                let args = trimmed_input.split_whitespace().collect::<Vec<&str>>();
+                let cmd = args.as_slice();
+                if let Some(_v) = find_file_in_path(cmd[0]) {
+                    exec_external(cmd);
+                } else {
+                    println!("{}: command not found", cmd[0])
+                }
+            }
         }
 
         input.clear();
@@ -65,4 +72,23 @@ fn find_file_in_path(file_name: &str) -> Option<PathBuf> {
         }
     }
     None
+}
+
+fn exec_external(cmd: &[&str]) {
+    println!(
+        "Program was passed {} args (including program name)",
+        cmd.len()
+    );
+    println!("Arg #0 (program name): {}", cmd[0]);
+
+    for (i, arg) in cmd.iter().skip(1).enumerate() {
+        println!("Arg #{}: {}", i + 1, arg);
+    }
+
+    let output = Command::new(cmd[0])
+        .args(cmd.iter().skip(1))
+        .output()
+        .expect("failed to execute process");
+
+    println!("{}", String::from_utf8_lossy(&output.stdout))
 }
