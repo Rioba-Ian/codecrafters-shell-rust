@@ -51,7 +51,7 @@ fn cmd_type(args: &[&str]) {
             } else {
                 println!("{}: not found", val);
             }
-        } // _ => println!("{} not found", args[0]),
+        }
     }
 }
 
@@ -66,8 +66,3 @@ fn find_file_in_path(file_name: &str) -> Option<PathBuf> {
     }
     None
 }
-
-/*
- * When you come back to continue use this for reference and help
- * https://forum.codecrafters.io/t/i-have-a-problem-with-mg5/6946
- */
