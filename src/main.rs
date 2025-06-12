@@ -25,7 +25,8 @@ fn main() {
             ["echo", args @ ..] => cmd_echo(args),
             ["type", args @ ..] => cmd_type(args),
             _ => {
-                let args = trimmed_input.split_whitespace().collect::<Vec<&str>>();
+                let args = trimmed_input.split(" ").collect::<Vec<&str>>();
+
                 let cmd = args.as_slice();
                 if let Some(v) = find_file_in_path(cmd[0]) {
                     exec_external(v, cmd);
@@ -86,6 +87,8 @@ fn exec_external(path_of_cmd: PathBuf, cmd: &[&str]) {
     }
 
     let mut command = Command::new(path_of_cmd);
+
+    println!("{:?}", &cmd[1..]);
 
     if cmd.len() > 1 {
         command.args(&cmd[1..]);
