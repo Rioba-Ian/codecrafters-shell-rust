@@ -88,11 +88,10 @@ fn exec_external(cmd: &str, args: &[&str]) {
 
     let mut command = Command::new(cmd);
 
-    if !args.is_empty() {
-        command.args(args);
-    }
+    command.args(args);
 
-    let output = command.output().expect("failed to execute program");
+    let output = command.output().expect("failed to execute process");
+    let output_string = String::from_utf8(output.stdout).expect("Invalid output utf8");
 
-    println!("{}", String::from_utf8_lossy(&output.stdout))
+    print!("{}", output_string)
 }
