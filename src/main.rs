@@ -76,16 +76,6 @@ fn find_file_in_path(file_name: &str) -> Option<PathBuf> {
 }
 
 fn exec_external(cmd: &str, args: &[&str]) {
-    println!(
-        "Program was passed {} args (including program name).\nArg #0 (program name): {}",
-        args.len() + 1,
-        cmd
-    );
-
-    for (i, arg) in args.iter().enumerate() {
-        println!("Arg #{}: {}", i + 1, arg);
-    }
-
     let mut command = Command::new(cmd);
 
     command.args(args);
