@@ -28,18 +28,10 @@ fn main() {
                 if let Some(_v) = find_file_in_path(*other) {
                     exec_external(*other, args);
                 } else {
-                    println!("{:?} command not found", other);
+                    println!("{}: command not found", other);
                 }
             }
             _ => {
-                // let args = trimmed_input.split(" ").collect::<Vec<&str>>();
-
-                // let cmd = args.as_slice();
-                // if let Some(v) = find_file_in_path(cmd[0]) {
-                //     exec_external(v, cmd);
-                // } else {
-                //     println!("{}: command not found", cmd[0])
-                // }
                 println!("unknown command!")
             }
         }
@@ -85,10 +77,10 @@ fn find_file_in_path(file_name: &str) -> Option<PathBuf> {
 
 fn exec_external(cmd: &str, args: &[&str]) {
     println!(
-        "Program was passed {} args (including program name).",
-        args.len() + 1
+        "Program was passed {} args (including program name).\nArg #0 (program name): {}",
+        args.len() + 1,
+        cmd
     );
-    println!("Arg #0 (program name): {}", cmd);
 
     for (i, arg) in args.iter().enumerate() {
         println!("Arg #{}: {}", i + 1, arg);
@@ -96,13 +88,11 @@ fn exec_external(cmd: &str, args: &[&str]) {
 
     let mut command = Command::new(cmd);
 
-    if args.len() > 1 {
+    if !args.is_empty() {
         command.args(args);
     }
 
-    let output = command.output().expect("failed to execute process");
+    let output = command.output().expect("failed to execute program");
 
-    let output_string = String::from_utf8(output.stdout).expect("Invalid output utf8");
-
-    print!("{}", output_string)
+    println!("{}", String::from_utf8_lossy(&output.stdout))
 }
