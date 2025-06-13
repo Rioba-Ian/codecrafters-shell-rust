@@ -24,15 +24,23 @@ fn main() {
             ["exit", code] => std::process::exit(code.parse().unwrap()),
             ["echo", args @ ..] => cmd_echo(args),
             ["type", args @ ..] => cmd_type(args),
-            _ => {
-                let args = trimmed_input.split(" ").collect::<Vec<&str>>();
-
-                let cmd = args.as_slice();
-                if let Some(v) = find_file_in_path(cmd[0]) {
-                    exec_external(v, cmd);
+            [other, args @ ..] => {
+                if let Some(_v) = find_file_in_path(*other) {
+                    exec_external(*other, args);
                 } else {
-                    println!("{}: command not found", cmd[0])
+                    println!("{:?} command not found", other);
                 }
+            }
+            _ => {
+                // let args = trimmed_input.split(" ").collect::<Vec<&str>>();
+
+                // let cmd = args.as_slice();
+                // if let Some(v) = find_file_in_path(cmd[0]) {
+                //     exec_external(v, cmd);
+                // } else {
+                //     println!("{}: command not found", cmd[0])
+                // }
+                println!("unknown command!")
             }
         }
 
@@ -75,22 +83,26 @@ fn find_file_in_path(file_name: &str) -> Option<PathBuf> {
     None
 }
 
-fn exec_external(path_of_cmd: PathBuf, cmd: &[&str]) {
+fn exec_external(cmd: &str, args: &[&str]) {
     println!(
         "Program was passed {} args (including program name).",
-        cmd.len()
+        args.len() + 1
     );
-    println!("Arg #0 (program name): {}", cmd[0]);
+    println!("Arg #0 (program name): {}", cmd);
 
-    for (i, arg) in cmd.iter().skip(1).enumerate() {
+    for (i, arg) in args.iter().enumerate() {
         println!("Arg #{}: {}", i + 1, arg);
     }
 
-    let mut command = Command::new(path_of_cmd);
+    let mut command = Command::new(cmd);
 
-    if cmd.len() > 1 {
-        command.args(&cmd[1..]);
+    if args.len() > 1 {
+        command.args(args);
     }
 
-    command.output().expect("failed to execute process");
+    let output = command.output().expect("failed to execute process");
+
+    let output_string = String::from_utf8(output.stdout).expect("Invalid output utf8");
+
+    print!("{}", output_string)
 }
