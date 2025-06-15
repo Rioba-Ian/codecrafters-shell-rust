@@ -1,11 +1,14 @@
 use std::str::FromStr;
 
-use crate::{algebra::CommandExt, command::Command, find_cmd_in_path};
+use crate::{
+    command::{Command, CommandExtract},
+    find_cmd_in_path,
+};
 
 #[derive(Debug, Clone, Default)]
 pub struct Type;
 
-impl CommandExt for Type {
+impl CommandExtract for Type {
     fn execute(&self, args: &[&str], path: &[String]) -> anyhow::Result<()> {
         let command_to_describe: Option<Command> = Command::from_str(args[1]).ok();
         let description = match command_to_describe {

@@ -1,9 +1,9 @@
-use crate::algebra::CommandExt;
+use crate::command::CommandExtract;
 
 #[derive(Debug, Clone, Default)]
 pub struct Pwd;
 
-impl CommandExt for Pwd {
+impl CommandExtract for Pwd {
     fn execute(&self, _args: &[&str], _path: &[String]) -> anyhow::Result<()> {
         let current_dir = std::env::current_dir()?;
 

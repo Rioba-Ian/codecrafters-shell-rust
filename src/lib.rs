@@ -1,9 +1,6 @@
-use std::{collections::HashSet, io};
+use std::io;
 
-pub mod algebra;
 pub mod command;
-
-const SPACE: char = ' ';
 
 pub fn find_cmd_in_path(cmd: &str, path: &[String]) -> Option<String> {
     path.iter()

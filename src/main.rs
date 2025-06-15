@@ -3,7 +3,7 @@ use std::io::{self, Write};
 use std::{process::Command as StdCommand, str::FromStr};
 
 use codecrafters_shell::{
-    algebra::CommandExt, command::Command as CommandDispatch, find_cmd_in_path, parse_input,
+    command::Command as CommandDispatch, command::CommandExtract, find_cmd_in_path, parse_input,
     read_path_env,
 };
 
