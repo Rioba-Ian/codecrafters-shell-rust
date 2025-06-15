@@ -18,7 +18,12 @@ impl CommandExtract for Cd {
 }
 
 fn change_directory(path: &str) -> io::Result<()> {
-    let absolute_path = Path::new(path);
-    env::set_current_dir(absolute_path)?;
+    if path == "~" {
+        let home_path = env::var("HOME").expect("could not get home variable");
+        env::set_current_dir(home_path).expect("failed to set home var path");
+    } else {
+        let absolute_path = Path::new(path);
+        env::set_current_dir(absolute_path)?;
+    }
     Ok(())
 }
