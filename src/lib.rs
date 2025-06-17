@@ -1,6 +1,8 @@
-use std::io;
+use std::{collections::HashSet, io};
 
 pub mod command;
+
+const SINGLE_QUOTE: char = '\'';
 
 pub fn find_cmd_in_path(cmd: &str, path: &[String]) -> Option<String> {
     path.iter()
@@ -32,7 +34,43 @@ pub fn read_path_env() -> Vec<String> {
 }
 
 pub fn parse_input(input: &str) -> Vec<String> {
-    input.split_whitespace().map(|s| s.to_string()).collect()
+    let mut args: Vec<String> = Vec::new();
+    let mut extracted_quoted_strings = HashSet::new();
+    let mut current_arg_buffer = String::new();
+    let mut in_single_quote = false;
+
+    let mut chars = input.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == SINGLE_QUOTE {
+            if in_single_quote {
+                args.push(current_arg_buffer.clone());
+                extracted_quoted_strings.insert(current_arg_buffer.clone());
+                current_arg_buffer.clear();
+                in_single_quote = false;
+            } else {
+                in_single_quote = true;
+            }
+        } else if ch.is_whitespace() && !in_single_quote {
+            if !current_arg_buffer.is_empty() {
+                args.push(current_arg_buffer.clone());
+                current_arg_buffer.clear();
+            }
+        } else {
+            current_arg_buffer.push(ch);
+        }
+    }
+
+    if !current_arg_buffer.is_empty() {
+        if in_single_quote {
+            args.push(current_arg_buffer.clone());
+            extracted_quoted_strings.insert(current_arg_buffer.clone());
+        } else {
+            args.push(current_arg_buffer.clone());
+        }
+    }
+
+    args
 }
 
 #[cfg(test)]
@@ -43,6 +81,46 @@ mod tests {
     fn test_parse_input_single_word() {
         let input = "hello";
         let expected = vec!["hello".to_string()];
+        assert_eq!(parse_input(input), expected);
+    }
+
+    #[test]
+    fn test_parse_input_multiple_words() {
+        let input = "hello world";
+        let expected = vec!["hello".to_string(), "world".to_string()];
+        assert_eq!(parse_input(input), expected);
+    }
+
+    #[test]
+    fn test_single_quote_literal() {
+        let input = "'hello'";
+        let expected = vec!["hello".to_string()];
+        assert_eq!(parse_input(input), expected);
+    }
+
+    #[test]
+    fn test_single_quote_literal_with_whitespace() {
+        let input = "'hello world'";
+        let expected = vec!["hello world".to_string()];
+        assert_eq!(parse_input(input), expected);
+    }
+
+    #[test]
+    fn test_single_quote_literal_with_multiple_words() {
+        let input = "'hello world'";
+        let expected = vec!["hello world".to_string()];
+        assert_eq!(parse_input(input), expected);
+    }
+
+    #[test]
+    fn test_single_quote_literal_with_multiple_words_and_whitespace() {
+        let input = "'hello     world' 'example''script' shell''test";
+        let expected = vec![
+            "hello world".to_string(),
+            "example'script".to_string(),
+            "shell".to_string(),
+            "test".to_string(),
+        ];
         assert_eq!(parse_input(input), expected);
     }
 }
