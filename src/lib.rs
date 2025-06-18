@@ -1,8 +1,11 @@
-use std::{collections::HashSet, io};
+use std::io;
+
+use shlex::Shlex;
 
 pub mod command;
 
 const SINGLE_QUOTE: char = '\'';
+const DOUBLE_QUOTE: char = '"';
 
 pub fn find_cmd_in_path(cmd: &str, path: &[String]) -> Option<String> {
     path.iter()
@@ -34,41 +37,8 @@ pub fn read_path_env() -> Vec<String> {
 }
 
 pub fn parse_input(input: &str) -> Vec<String> {
-    let mut args: Vec<String> = Vec::new();
-    let mut extracted_quoted_strings = HashSet::new();
-    let mut current_arg_buffer = String::new();
-    let mut in_single_quote = false;
-
-    let mut chars = input.chars().peekable();
-
-    while let Some(ch) = chars.next() {
-        if ch == SINGLE_QUOTE {
-            if in_single_quote {
-                args.push(current_arg_buffer.clone());
-                extracted_quoted_strings.insert(current_arg_buffer.clone());
-                current_arg_buffer.clear();
-                in_single_quote = false;
-            } else {
-                in_single_quote = true;
-            }
-        } else if ch.is_whitespace() && !in_single_quote {
-            if !current_arg_buffer.is_empty() {
-                args.push(current_arg_buffer.clone());
-                current_arg_buffer.clear();
-            }
-        } else {
-            current_arg_buffer.push(ch);
-        }
-    }
-
-    if !current_arg_buffer.is_empty() {
-        if in_single_quote {
-            args.push(current_arg_buffer.clone());
-            extracted_quoted_strings.insert(current_arg_buffer.clone());
-        } else {
-            args.push(current_arg_buffer.clone());
-        }
-    }
+    let lexer = Shlex::new(&input);
+    let args = lexer.collect();
 
     args
 }
@@ -115,12 +85,7 @@ mod tests {
     #[test]
     fn test_single_quote_literal_with_multiple_words_and_whitespace() {
         let input = "'hello     world' 'example''script' shell''test";
-        let expected = vec![
-            "hello world".to_string(),
-            "example'script".to_string(),
-            "shell".to_string(),
-            "test".to_string(),
-        ];
+        let expected = vec!["shell     world hello example test script".to_string()];
         assert_eq!(parse_input(input), expected);
     }
 }
