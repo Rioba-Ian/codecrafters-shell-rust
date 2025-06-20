@@ -62,6 +62,8 @@ pub fn parse_input(input: &str) -> Vec<String> {
                     if curr_token.chars().last() == Some(BACKLASH_QUOTE) {
                         curr_token.pop();
                     } else {
+                        println!("running..{}", ch);
+
                         curr_open.pop();
                     }
                 } else {
@@ -71,6 +73,7 @@ pub fn parse_input(input: &str) -> Vec<String> {
             SINGLE_QUOTE if !is_within_double => {
                 if is_within_single {
                     if curr_token.chars().last() == Some(BACKLASH_QUOTE) {
+                        skip_next = true;
                         curr_token.pop();
                     } else {
                         curr_token.push(ch);
@@ -79,6 +82,7 @@ pub fn parse_input(input: &str) -> Vec<String> {
                     curr_open.push(ch);
                 }
             }
+
             WHITESPACE | '\t' | '\n' => {
                 if is_within_double || is_within_single {
                     curr_token.push(ch);
@@ -88,16 +92,21 @@ pub fn parse_input(input: &str) -> Vec<String> {
                 }
             }
 
-            BACKLASH_QUOTE => match next_ch {
+            BACKLASH_QUOTE if is_within_double => {
+                skip_next = true;
+            }
+
+            BACKLASH_QUOTE if !is_within_single => match next_ch {
                 Some(&c) => {
                     if c.is_whitespace() {
                         skip_next = true;
                         curr_token.push_str(" ");
-                    } else if c == SINGLE_QUOTE || c == DOUBLE_QUOTE {
+                    } else if c == DOUBLE_QUOTE || c == SINGLE_QUOTE {
                         skip_next = true;
                         curr_token.push(c);
                     } else {
-                        curr_token.push(ch)
+                        curr_token.push(c);
+                        skip_next = true;
                     }
                 }
                 None => {}
