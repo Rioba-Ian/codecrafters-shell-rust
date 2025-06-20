@@ -90,7 +90,7 @@ pub fn parse_input(input: &str) -> Vec<String> {
                 }
             }
 
-            BACKLASH_QUOTE if is_within_double => {
+            BACKLASH_QUOTE if is_within_single => {
                 skip_next = true;
             }
 
@@ -99,9 +99,16 @@ pub fn parse_input(input: &str) -> Vec<String> {
                     if c.is_whitespace() {
                         skip_next = true;
                         curr_token.push_str(" ");
-                    } else if c == DOUBLE_QUOTE || c == SINGLE_QUOTE {
+                    } else if c == DOUBLE_QUOTE {
                         skip_next = true;
                         curr_token.push(c);
+                    } else if c == SINGLE_QUOTE {
+                        if !is_within_double {
+                            skip_next = true;
+                            curr_token.push(c);
+                        } else {
+                            skip_next = true
+                        }
                     } else {
                         curr_token.push(c);
                         skip_next = true;
