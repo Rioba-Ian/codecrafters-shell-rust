@@ -62,8 +62,6 @@ pub fn parse_input(input: &str) -> Vec<String> {
                     if curr_token.chars().last() == Some(BACKLASH_QUOTE) {
                         curr_token.pop();
                     } else {
-                        println!("running..{}", ch);
-
                         curr_open.pop();
                     }
                 } else {
