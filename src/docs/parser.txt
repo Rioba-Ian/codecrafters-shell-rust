@@ -40,3 +40,52 @@ fn parse_input(&input: str) -> Vec<String> {
             .collect::<Vec<String>>()
     );
 }
+
+
+/* new parser */
+
+pub fn tokenize(input: &str) -> Vec<String> {
+        let mut current_open = vec![];
+        let mut current_token = String::new();
+        let mut tokens = vec![];
+
+        for c in input.chars() {
+            let is_within_single_quote = current_open.last() == Some(&'\'');
+            let is_within_double_quote = current_open.last() == Some(&'"');
+            match c {
+                '"' if !is_within_single_quote => {
+                    if is_within_double_quote {
+                        if current_token.chars().last() == Some('\\') {
+                            current_token.pop();
+                        } else {
+                            current_open.pop();
+                        }
+                    } else {
+                        current_open.push(c);
+                    }
+                }
+                '\'' if !is_within_double_quote => {
+                    if is_within_single_quote {
+                        current_open.pop();
+                    } else {
+                        current_open.push(c);
+                    }
+                }
+                ' ' | '\t' | '\n' => {
+                    if is_within_single_quote || is_within_double_quote {
+                        current_token.push(c);
+                    } else if !current_token.is_empty() {
+                        tokens.push(current_token.clone());
+                        current_token.clear();
+                    }
+                }
+                _ => current_token.push(c),
+            }
+        }
+
+        if !current_token.is_empty() {
+            tokens.push(current_token);
+        }
+
+        return tokens;
+    }
