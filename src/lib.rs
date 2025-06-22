@@ -89,11 +89,7 @@ pub fn parse_input(input: &str) -> Vec<String> {
                 }
             }
 
-            BACKLASH_QUOTE if is_within_single => {
-                skip_next = true;
-            }
-
-            BACKLASH_QUOTE if !is_within_single => match next_ch {
+            BACKLASH_QUOTE if !is_within_single && !is_within_double => match next_ch {
                 Some(&c) => {
                     if c.is_whitespace() {
                         skip_next = true;
