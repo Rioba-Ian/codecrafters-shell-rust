@@ -71,10 +71,9 @@ pub fn parse_input(input: &str) -> Vec<String> {
             SINGLE_QUOTE if !is_within_double => {
                 if is_within_single {
                     if curr_token.chars().last() == Some(BACKLASH_QUOTE) {
-                        skip_next = true;
-                        curr_token.pop();
-                    } else {
                         curr_token.push(ch);
+                    } else {
+                        curr_open.pop();
                     }
                 } else {
                     curr_open.push(ch);
