@@ -1,2 +1,53 @@
 
 // previous brainstorming
+let mut tokens = Vec::new();
+    let mut token = String::new();
+    let mut single_quote = false;
+    let mut double_quote = false;
+    let mut escaped = false;
+    for char in input.chars() {
+        match char {
+            _ if escaped => {
+                token.push(char);
+                escaped = false;
+            }
+            ' ' => {
+                if single_quote || double_quote || escaped {
+                    token.push(char);
+                    continue;
+                }
+                if !token.is_empty() {
+                    tokens.push(token);
+                    token = String::new();
+                }
+            }
+            '"' => {
+                if single_quote {
+                    token.push(char);
+                } else {
+                    double_quote = !double_quote;
+                }
+            }
+            '\'' => {
+                if !double_quote {
+                    single_quote = !single_quote;
+                } else {
+                    token.push(char);
+                }
+            }
+            '\n' => {
+                tokens.push(token);
+                break;
+            }
+            '\\' => {
+                if single_quote || double_quote {
+                    token.push(char);
+                } else {
+                    escaped = true;
+                }
+            }
+            _ => {
+                token.push(char);
+            }
+        }
+    }

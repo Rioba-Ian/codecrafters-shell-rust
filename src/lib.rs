@@ -38,79 +38,70 @@ pub fn read_path_env() -> Vec<String> {
 }
 
 pub fn parse_input(input: &str) -> Vec<String> {
-    let mut curr_open = Vec::new();
     let mut curr_token = String::new();
     let mut tokens = vec![];
     let mut skip_next = false;
+    let mut is_single_quote = false;
+    let mut is_double_quote = false;
 
     let chars: Vec<char> = input.chars().collect();
 
     for i in 0..chars.len() {
         let ch = chars[i];
-        let is_within_single = curr_open.last() == Some(&SINGLE_QUOTE);
-        let is_within_double = curr_open.last() == Some(&DOUBLE_QUOTE);
         let next_ch = chars.get(i + 1);
 
-        if skip_next {
-            skip_next = false;
-            continue;
-        }
-
         match ch {
-            DOUBLE_QUOTE if !is_within_single => {
-                if is_within_double {
-                    if curr_token.chars().last() == Some(BACKLASH_QUOTE) {
-                        curr_token.pop();
-                    } else {
-                        curr_open.pop();
-                    }
-                } else {
-                    curr_open.push(ch);
-                }
-            }
-            SINGLE_QUOTE if !is_within_double => {
-                if is_within_single {
-                    if curr_token.chars().last() == Some(BACKLASH_QUOTE) {
-                        curr_token.push(ch);
-                    } else {
-                        curr_open.pop();
-                    }
-                } else {
-                    curr_open.push(ch);
-                }
+            _ if skip_next => {
+                curr_token.push(ch);
+                skip_next = false;
             }
 
-            WHITESPACE | '\t' | '\n' => {
-                if is_within_double || is_within_single {
+            DOUBLE_QUOTE => {
+                if is_single_quote {
                     curr_token.push(ch);
-                } else if !curr_token.is_empty() {
-                    tokens.push(curr_token.clone());
-                    curr_token.clear();
+                } else {
+                    is_double_quote = !is_double_quote;
                 }
             }
 
-            BACKLASH_QUOTE if !is_within_single && !is_within_double => match next_ch {
-                Some(&c) => {
-                    if c.is_whitespace() {
-                        skip_next = true;
-                        curr_token.push_str(" ");
-                    } else if c == DOUBLE_QUOTE {
-                        skip_next = true;
-                        curr_token.push(c);
-                    } else if c == SINGLE_QUOTE {
-                        if !is_within_double {
-                            skip_next = true;
-                            curr_token.push(c);
-                        } else {
-                            skip_next = true
-                        }
-                    } else {
-                        curr_token.push(c);
-                        skip_next = true;
-                    }
+            SINGLE_QUOTE => {
+                if !is_double_quote {
+                    is_single_quote = !is_single_quote;
+                } else {
+                    curr_token.push(ch);
                 }
-                None => {}
-            },
+            }
+
+            WHITESPACE => {
+                if is_double_quote || is_single_quote || skip_next {
+                    curr_token.push(ch);
+                    continue;
+                }
+
+                if !curr_token.is_empty() {
+                    tokens.push(curr_token);
+                    curr_token = String::new();
+                }
+            }
+
+            BACKLASH_QUOTE => {
+                if is_single_quote {
+                    curr_token.push(ch);
+                } else if is_double_quote {
+                    match next_ch {
+                        Some(&c) => {
+                            if c == BACKLASH_QUOTE || c == DOUBLE_QUOTE {
+                                skip_next = true;
+                            } else {
+                                curr_token.push(ch);
+                            }
+                        }
+                        None => {}
+                    }
+                } else {
+                    skip_next = true;
+                }
+            }
 
             _ => curr_token.push(ch),
         }
