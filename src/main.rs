@@ -1,6 +1,11 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::{process::Command as StdCommand, str::FromStr};
+use std::{
+    fs::File,
+    mem::take,
+    process::{Command as StdCommand, Stdio},
+    str::FromStr,
+};
 
 use codecrafters_shell::{
     command::Command as CommandDispatch, command::CommandExtract, find_cmd_in_path, parse_input,
@@ -31,7 +36,26 @@ fn main() -> Result<(), anyhow::Error> {
             .first()
             .and_then(|cmd| CommandDispatch::from_str(cmd).ok());
 
-        if let Some(cmd) = cmd {
+        let mut path_redirect_output = Vec::new();
+        let mut args_before_redirect = Vec::new();
+
+        for (index, arg) in parsed_input.iter().enumerate() {
+            if *arg == ">" || *arg == "1>" {
+                path_redirect_output = parsed_input[index + 1..].to_vec();
+                args_before_redirect = parsed_input[1..index].to_vec();
+                break;
+            }
+        }
+
+        if !path_redirect_output.is_empty() {
+            let output_file = File::create(path_redirect_output.join(" ")).unwrap();
+            let cmd = parsed_input.first().unwrap();
+            let mut command = StdCommand::new(cmd);
+
+            command.args(args_before_redirect);
+
+            command.stdout(Stdio::from(output_file)).spawn()?.wait()?;
+        } else if let Some(cmd) = cmd {
             cmd.execute(&parsed_input, &path)?;
         } else {
             let cmd = parsed_input.first().unwrap();

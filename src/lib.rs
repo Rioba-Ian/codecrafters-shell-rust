@@ -111,8 +111,6 @@ pub fn parse_input(input: &str) -> Vec<String> {
         tokens.push(curr_token);
     }
 
-    // println!("{:?}", tokens);
-
     tokens
 }
 
