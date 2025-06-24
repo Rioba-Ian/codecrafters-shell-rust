@@ -2,7 +2,6 @@
 use std::io::{self, Write};
 use std::{
     fs::File,
-    mem::take,
     process::{Command as StdCommand, Stdio},
     str::FromStr,
 };
@@ -38,9 +37,14 @@ fn main() -> Result<(), anyhow::Error> {
 
         let mut path_redirect_output = Vec::new();
         let mut args_before_redirect = Vec::new();
+        let mut output_err = false;
 
         for (index, arg) in parsed_input.iter().enumerate() {
-            if *arg == ">" || *arg == "1>" {
+            if *arg == ">" || *arg == "1>" || *arg == "2>" {
+                if *arg == "2>" {
+                    output_err = true
+                }
+
                 path_redirect_output = parsed_input[index + 1..].to_vec();
                 args_before_redirect = parsed_input[1..index].to_vec();
                 break;
@@ -54,7 +58,14 @@ fn main() -> Result<(), anyhow::Error> {
 
             command.args(args_before_redirect);
 
-            command.stdout(Stdio::from(output_file)).spawn()?.wait()?;
+            if output_err {
+                let output_err_file = File::create(path_redirect_output.join(" ")).unwrap();
+                command.stderr(Stdio::from(output_err_file));
+            } else {
+                command.stdout(Stdio::from(output_file));
+            }
+
+            command.spawn()?.wait()?;
         } else if let Some(cmd) = cmd {
             cmd.execute(&parsed_input, &path)?;
         } else {
