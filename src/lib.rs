@@ -1,4 +1,7 @@
-use std::io;
+use std::{
+    fs::OpenOptions,
+    io::{self, Error, Write},
+};
 
 pub mod command;
 
@@ -112,6 +115,16 @@ pub fn parse_input(input: &str) -> Vec<String> {
     }
 
     tokens
+}
+
+pub fn append_to_file(file_path: &str, contents: Vec<u8>) -> Result<(), Error> {
+    let mut file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(file_path)?;
+
+    file.write_all(&contents)?;
+    Ok(())
 }
 
 #[cfg(test)]

@@ -7,8 +7,9 @@ use std::{
 };
 
 use codecrafters_shell::{
-    command::Command as CommandDispatch, command::CommandExtract, find_cmd_in_path, parse_input,
-    read_path_env,
+    append_to_file,
+    command::{Command as CommandDispatch, CommandExtract},
+    find_cmd_in_path, parse_input, read_path_env,
 };
 
 fn main() -> Result<(), anyhow::Error> {
@@ -38,11 +39,14 @@ fn main() -> Result<(), anyhow::Error> {
         let mut path_redirect_output = Vec::new();
         let mut args_before_redirect = Vec::new();
         let mut output_err = false;
+        let mut append_output = false;
 
         for (index, arg) in parsed_input.iter().enumerate() {
-            if *arg == ">" || *arg == "1>" || *arg == "2>" {
-                if *arg == "2>" {
-                    output_err = true
+            if *arg == ">" || *arg == "1>" || *arg == "2>" || arg.ends_with(">>") {
+                match *arg {
+                    "2>" => output_err = true,
+                    ">>" | "1>>" => append_output = true,
+                    _ => {}
                 }
 
                 path_redirect_output = parsed_input[index + 1..].to_vec();
@@ -61,11 +65,19 @@ fn main() -> Result<(), anyhow::Error> {
             if output_err {
                 let output_err_file = File::create(path_redirect_output.join(" ")).unwrap();
                 command.stderr(Stdio::from(output_err_file));
+                command.spawn()?.wait()?;
+            } else if append_output {
+                let ouput = command.output().expect("failed to execute command");
+
+                append_to_file(
+                    path_redirect_output.join(" ").as_str(),
+                    ouput.stdout.to_owned(),
+                )
+                .expect("failed to write to file");
             } else {
                 command.stdout(Stdio::from(output_file));
+                command.spawn()?.wait()?;
             }
-
-            command.spawn()?.wait()?;
         } else if let Some(cmd) = cmd {
             cmd.execute(&parsed_input, &path)?;
         } else {
