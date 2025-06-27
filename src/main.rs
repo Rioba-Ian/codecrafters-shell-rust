@@ -56,27 +56,26 @@ fn main() -> Result<(), anyhow::Error> {
         }
 
         if !path_redirect_output.is_empty() {
-            let output_file = File::create(path_redirect_output.join(" ")).unwrap();
             let cmd = parsed_input.first().unwrap();
             let mut command = StdCommand::new(cmd);
 
             command.args(args_before_redirect);
 
-            if output_err {
-                let output_err_file = File::create(path_redirect_output.join(" ")).unwrap();
-                command.stderr(Stdio::from(output_err_file));
-                command.spawn()?.wait()?;
-            } else if append_output {
+            if append_output {
                 let ouput = command.output().expect("failed to execute command");
 
-                append_to_file(
-                    path_redirect_output.join(" ").as_str(),
-                    ouput.stdout.to_owned(),
-                )
-                .expect("failed to write to file");
+                append_to_file(path_redirect_output.join(" ").as_str(), ouput.stdout)?;
             } else {
-                command.stdout(Stdio::from(output_file));
-                command.spawn()?.wait()?;
+                let output_file = File::create(path_redirect_output.join(" ")).unwrap();
+
+                if output_err {
+                    let output_err_file = File::create(path_redirect_output.join(" ")).unwrap();
+                    command.stderr(Stdio::from(output_err_file));
+                    command.spawn()?.wait()?;
+                } else {
+                    command.stdout(Stdio::from(output_file));
+                    command.spawn()?.wait()?;
+                }
             }
         } else if let Some(cmd) = cmd {
             cmd.execute(&parsed_input, &path)?;
