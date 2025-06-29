@@ -45,7 +45,7 @@ fn main() -> Result<(), anyhow::Error> {
             if *arg == ">" || *arg == "1>" || *arg == "2>" || arg.ends_with(">>") {
                 match *arg {
                     "2>" => output_err = true,
-                    ">>" | "1>>" => append_output = true,
+                    ">>" | "1>>" | "2>>" => append_output = true,
                     _ => {}
                 }
 
@@ -64,7 +64,11 @@ fn main() -> Result<(), anyhow::Error> {
             if append_output {
                 let ouput = command.output().expect("failed to execute command");
 
-                append_to_file(path_redirect_output.join(" ").as_str(), ouput.stdout)?;
+                if !ouput.status.success() {
+                    append_to_file(path_redirect_output.join(" ").as_str(), ouput.stderr)?;
+                } else {
+                    append_to_file(path_redirect_output.join(" ").as_str(), ouput.stdout)?;
+                }
             } else {
                 let output_file = File::create(path_redirect_output.join(" ")).unwrap();
 
