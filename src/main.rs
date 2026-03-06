@@ -45,7 +45,7 @@ fn main() -> Result<(), anyhow::Error> {
             if *arg == ">" || *arg == "1>" || *arg == "2>" || arg.ends_with(">>") {
                 match *arg {
                     "2>" => output_err = true,
-                    ">>" | "1>>" | "2>>" => append_output = true,
+                    ">>" | "1>>" | "2>>" => output_err = true,
                     _ => {}
                 }
 
