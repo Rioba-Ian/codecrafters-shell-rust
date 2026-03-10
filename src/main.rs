@@ -46,11 +46,11 @@ fn main() -> Result<(), anyhow::Error> {
             if *arg == ">" || *arg == "1>" || *arg == "2>" || arg.ends_with(">>") {
                 match *arg {
                     "2>" => {
-                        println!("received 2> ");
+                        // println!("received 2> ");
                         output_err = true;
                     }
                     ">>" | "1>>" | "2>>" => {
-                        println!("received {}", *arg);
+                        // println!("received {}", *arg);
                         append_output = true;
                     }
                     _ => {}
