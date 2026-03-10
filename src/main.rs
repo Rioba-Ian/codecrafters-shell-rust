@@ -98,12 +98,12 @@ fn main() -> Result<(), anyhow::Error> {
                 if output_err {
                     let output_err_file = File::create(path_redirect_output.join(" ")).unwrap();
                     command.stderr(Stdio::from(output_err_file));
-                    command.spawn()?.wait()?;
                 } else {
                     command.stdout(Stdio::from(output_file));
-                    command.spawn()?.wait()?;
                 }
             }
+
+            command.spawn()?.wait()?;
         } else if let Some(cmd) = cmd {
             cmd.execute(&parsed_input, &path)?;
         } else {
