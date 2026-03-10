@@ -1,7 +1,8 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 use std::{
-    fs::File,
+    fs::{self, File},
+    path::Path,
     process::{Command as StdCommand, Stdio},
     str::FromStr,
 };
@@ -44,8 +45,14 @@ fn main() -> Result<(), anyhow::Error> {
         for (index, arg) in parsed_input.iter().enumerate() {
             if *arg == ">" || *arg == "1>" || *arg == "2>" || arg.ends_with(">>") {
                 match *arg {
-                    "2>" => output_err = true,
-                    ">>" | "1>>" | "2>>" => output_err = true,
+                    "2>" => {
+                        println!("received 2> ");
+                        output_err = true;
+                    }
+                    ">>" | "1>>" | "2>>" => {
+                        println!("received {}", *arg);
+                        append_output = true;
+                    }
                     _ => {}
                 }
 
@@ -55,19 +62,35 @@ fn main() -> Result<(), anyhow::Error> {
             }
         }
 
+        // check if the path we are redirecting the output to exists first and if not create that path and file
+
         if !path_redirect_output.is_empty() {
             let cmd = parsed_input.first().unwrap();
             let mut command = StdCommand::new(cmd);
+            let path_redirect = path_redirect_output.join(" ");
+            let path_to_redirect_exists = fs::exists(path_redirect.to_owned())?;
 
             command.args(args_before_redirect);
 
+            // println!("the path:: {}", path_to_redirect_exists);
+
+            if !path_to_redirect_exists {
+                let new_path = Path::new(path_redirect.as_str());
+                if let Some(par) = new_path.parent() {
+                    fs::create_dir_all(par)?;
+                }
+            }
+
+            // println!("the path:: {}", path_to_redirect_exists);
+
             if append_output {
                 let ouput = command.output().expect("failed to execute command");
+                // println!("output append is {} and it exists", path_redirect);
 
                 if !ouput.status.success() {
-                    append_to_file(path_redirect_output.join(" ").as_str(), ouput.stderr)?;
+                    append_to_file(path_redirect.as_str(), ouput.stderr)?;
                 } else {
-                    append_to_file(path_redirect_output.join(" ").as_str(), ouput.stdout)?;
+                    append_to_file(path_redirect.as_str(), ouput.stdout)?;
                 }
             } else {
                 let output_file = File::create(path_redirect_output.join(" ")).unwrap();
