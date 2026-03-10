@@ -41,6 +41,7 @@ fn main() -> Result<(), anyhow::Error> {
         let mut args_before_redirect = Vec::new();
         let mut output_err = false;
         let mut append_output = false;
+        let mut append_err_output = false;
 
         for (index, arg) in parsed_input.iter().enumerate() {
             if *arg == ">" || *arg == "1>" || *arg == "2>" || arg.ends_with(">>") {
@@ -51,8 +52,12 @@ fn main() -> Result<(), anyhow::Error> {
                     }
                     ">>" | "1>>" | "2>>" => {
                         // println!("received {}", *arg);
+                        if *arg == "2>>" {
+                            append_err_output = true;
+                        }
                         append_output = true;
                     }
+
                     _ => {}
                 }
 
@@ -87,7 +92,7 @@ fn main() -> Result<(), anyhow::Error> {
                 let ouput = command.output().expect("failed to execute command");
                 // println!("output append is {} and it exists", path_redirect);
 
-                if !ouput.status.success() {
+                if !ouput.status.success() && append_err_output {
                     append_to_file(path_redirect.as_str(), ouput.stderr)?;
                 } else {
                     append_to_file(path_redirect.as_str(), ouput.stdout)?;
