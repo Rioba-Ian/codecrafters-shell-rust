@@ -1,7 +1,6 @@
 use std::{
-    fs::{self, File, OpenOptions},
+    fs::OpenOptions,
     io::{self, Error, Write},
-    path::Path,
 };
 
 pub mod command;
